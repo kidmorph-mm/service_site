@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { OrbitControls, Center } from "@react-three/drei";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
@@ -7,16 +7,23 @@ import * as THREE from "three";
 function ObjModel({ url }: { url: string }) {
   const obj = useLoader(OBJLoader, url);
 
-  obj.traverse((child) => {
-    const mesh = child as THREE.Mesh;
-    if ((mesh as any).isMesh) {
-      mesh.material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
-    }
-  });
+  // ✅ 같은 OBJ를 여러 Canvas에서 동시에 쓸 수 있도록 clone해서 사용
+  const cloned = useMemo(() => {
+    const c = obj.clone(true);
+
+    c.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if ((mesh as any).isMesh) {
+        mesh.material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+      }
+    });
+
+    return c;
+  }, [obj]);
 
   return (
     <Center>
-      <primitive object={obj} />
+      <primitive object={cloned} />
     </Center>
   );
 }
@@ -32,13 +39,13 @@ export default function Viewer3D({ objUrl }: { objUrl: string }) {
         borderRadius: 14,
         overflow: "hidden",
         border: "1px solid #eee",
-        position: "relative",     // ✅ 이게 핵심(각 카드 안에서 canvas가 잡힘)
-        isolation: "isolate",     // ✅ 겹침/레이어링 문제 방지
+        position: "relative",
+        isolation: "isolate",
         background: "#fafafa",
       }}
     >
       <Canvas
-        key={objUrl} // ✅ url 바뀔 때 캔버스/로더 상태 확실히 리셋
+        key={objUrl}
         style={{
           position: "absolute",
           inset: 0,

@@ -3,7 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 type NavItem = { to: string; label: string; end?: boolean };
 
 const navItems: NavItem[] = [
-  { to: "/app", label: "Dashboard", end: true }, // /app에서만 active
+  { to: "/app", label: "Dashboard", end: true },
   { to: "/app/new", label: "New Job" },
   { to: "/app/queue", label: "Queue" },
   { to: "/app/history", label: "History" },
@@ -48,7 +48,6 @@ export default function AppLayout() {
             >
               {({ isActive }) => (
                 <>
-                  {/* Left focus bar */}
                   <span
                     style={{
                       position: "absolute",
@@ -70,8 +69,36 @@ export default function AppLayout() {
         </nav>
       </aside>
 
-      <main style={{ flex: 1, padding: 24, minWidth: 0, overflowX: "hidden" }}>
-        <Outlet />
+      <main
+        style={{
+          flex: 1,
+          padding: 24,
+          minWidth: 0,
+          overflowX: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ flex: 1 }}>
+          <Outlet />
+        </div>
+
+        <footer
+          style={{
+            marginTop: 20,
+            paddingTop: 14,
+            borderTop: "1px solid #eee",
+            color: "#666",
+            fontSize: 12,
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>© {new Date().getFullYear()} Team wongeon. All rights reserved.</div>
+          <div>KidMorph Studio · Built for graduation project</div>
+        </footer>
       </main>
     </div>
   );

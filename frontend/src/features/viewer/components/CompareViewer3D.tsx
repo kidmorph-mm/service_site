@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo,useRef, useState } from "react";
 import { Canvas, useLoader, useThree } from "@react-three/fiber";
 import { OrbitControls, Center } from "@react-three/drei";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
@@ -15,16 +15,20 @@ type ViewState = {
 function ObjModel({ url }: { url: string }) {
   const obj = useLoader(OBJLoader, url);
 
-  obj.traverse((child) => {
-    const mesh = child as THREE.Mesh;
-    if ((mesh as any).isMesh) {
-      mesh.material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
-    }
-  });
+  const cloned = useMemo(() => {
+    const c = obj.clone(true);
+    c.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if ((mesh as any).isMesh) {
+        mesh.material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+      }
+    });
+    return c;
+  }, [obj]);
 
   return (
     <Center>
-      <primitive object={obj} />
+      <primitive object={cloned} />
     </Center>
   );
 }

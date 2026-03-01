@@ -2,12 +2,18 @@ import { Link } from "react-router-dom";
 
 type Difficulty = "easy" | "medium" | "hard" | "limit";
 
+// NewJobPage(v1) 기준: pipeline 2개만 사용
+type PipelineUI = "image_to_child" | "smplx_to_child";
+
 type Sample = {
   id: string;
   title: string;
   difficulty: Difficulty;
   tags: string[];
   desc: string;
+
+  // Run 눌렀을 때 New Job에 미리 채울 값
+  pipelineType: PipelineUI;
 };
 
 const samples: Sample[] = [
@@ -17,27 +23,38 @@ const samples: Sample[] = [
     difficulty: "easy",
     tags: ["smplx_to_child", "demo"],
     desc: "기본 체형 변환 예시 (샘플).",
+    pipelineType: "smplx_to_child",
   },
   {
     id: "sample_02",
-    title: "Image → 3D (basic)",
+    title: "Image → Child (end-to-end)",
     difficulty: "medium",
-    tags: ["image_to_3d", "demo"],
-    desc: "이미지 기반 3D 생성 예시 (샘플).",
+    tags: ["image_to_child", "demo"],
+    desc: "이미지 입력부터 3D/SMPL-X 복원 후 아이로 변환까지 (샘플).",
+    pipelineType: "image_to_child",
   },
   {
     id: "sample_03",
     title: "Hard case (occlusion)",
     difficulty: "hard",
-    tags: ["edge", "occlusion"],
+    tags: ["image_to_child", "edge", "occlusion"],
     desc: "가림/노이즈가 있는 케이스 (샘플).",
+    pipelineType: "image_to_child",
   },
 ];
 
 export default function GalleryPage() {
   return (
     <div style={{ maxWidth: 1100, width: "100%", minWidth: 0 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-end", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 12,
+          alignItems: "flex-end",
+          flexWrap: "wrap",
+        }}
+      >
         <div>
           <h1 style={{ marginBottom: 6 }}>Gallery</h1>
           <div style={{ color: "#555" }}>발표/시연용 대표 샘플을 빠르게 확인하고 실행할 수 있습니다.</div>
@@ -48,7 +65,14 @@ export default function GalleryPage() {
         </Link>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginTop: 14 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 12,
+          marginTop: 14,
+        }}
+      >
         {samples.map((s) => (
           <SampleCard key={s.id} sample={s} />
         ))}
@@ -58,8 +82,19 @@ export default function GalleryPage() {
 }
 
 function SampleCard({ sample }: { sample: Sample }) {
+  // ✅ presetId 제거: NewJobPage에서 balanced 고정으로 처리
+  const runTo = `/app/new?pipelineType=${sample.pipelineType}&sampleId=${sample.id}`;
+
   return (
-    <div style={{ border: "1px solid #eee", borderRadius: 16, padding: 14, background: "#fff", minWidth: 0 }}>
+    <div
+      style={{
+        border: "1px solid #eee",
+        borderRadius: 16,
+        padding: 14,
+        background: "#fff",
+        minWidth: 0,
+      }}
+    >
       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
         <div style={{ fontWeight: 1000 }}>{sample.title}</div>
         <Badge difficulty={sample.difficulty} />
@@ -79,9 +114,10 @@ function SampleCard({ sample }: { sample: Sample }) {
         <Link to={`/app/gallery/${sample.id}`} style={ghostLink}>
           View
         </Link>
-        <button type="button" onClick={() => alert("mock: run sample")} style={primaryBtn}>
+
+        <Link to={runTo} style={primaryLinkBtn}>
           Run
-        </button>
+        </Link>
       </div>
     </div>
   );
@@ -94,9 +130,21 @@ function Badge({ difficulty }: { difficulty: Difficulty }) {
     hard: { bg: "#fff4e5", fg: "#92400e", text: "HARD" },
     limit: { bg: "#fdecea", fg: "#b42318", text: "LIMIT" },
   };
-
   const s = map[difficulty];
-  return <span style={{ padding: "6px 10px", borderRadius: 999, background: s.bg, color: s.fg, fontSize: 12, fontWeight: 1000 }}>{s.text}</span>;
+  return (
+    <span
+      style={{
+        padding: "6px 10px",
+        borderRadius: 999,
+        background: s.bg,
+        color: s.fg,
+        fontSize: 12,
+        fontWeight: 1000,
+      }}
+    >
+      {s.text}
+    </span>
+  );
 }
 
 const tagStyle = {
@@ -120,6 +168,18 @@ const primaryLink = {
   fontSize: 12,
 } as const;
 
+const primaryLinkBtn = {
+  padding: "10px 12px",
+  borderRadius: 12,
+  border: "1px solid #ddd",
+  background: "#111",
+  color: "#fff",
+  textDecoration: "none",
+  fontWeight: 1000,
+  fontSize: 12,
+  display: "inline-block",
+} as const;
+
 const ghostLink = {
   padding: "10px 12px",
   borderRadius: 12,
@@ -130,15 +190,4 @@ const ghostLink = {
   fontWeight: 1000,
   fontSize: 12,
   display: "inline-block",
-} as const;
-
-const primaryBtn = {
-  padding: "10px 12px",
-  borderRadius: 12,
-  border: "1px solid #ddd",
-  background: "#111",
-  color: "#fff",
-  fontWeight: 1000,
-  fontSize: 12,
-  cursor: "pointer",
 } as const;
