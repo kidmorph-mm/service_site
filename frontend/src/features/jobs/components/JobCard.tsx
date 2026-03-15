@@ -1,11 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { JobItem } from "../backendApi";
 import { deleteJob } from "../backendApi";
 
 export default function JobCard({ job }: { job: JobItem }) {
   const qc = useQueryClient();
-  const nav = useNavigate();
 
   const canDelete = job.status === "done" || job.status === "failed";
 

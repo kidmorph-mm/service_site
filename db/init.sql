@@ -1,0 +1,36 @@
+CREATE TABLE IF NOT EXISTS users (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+);
+
+CREATE TABLE IF NOT EXISTS jobs (
+  id VARCHAR(64) PRIMARY KEY,
+  user_id BIGINT NULL,
+  title VARCHAR(255) NULL,
+  pipeline_type VARCHAR(64) NOT NULL,
+  preset_id VARCHAR(64) NOT NULL,
+  sample_id VARCHAR(255) NULL,
+  status VARCHAR(32) NOT NULL,
+  progress DOUBLE NOT NULL DEFAULT 0,
+  message VARCHAR(255) NULL,
+  created_at DATETIME(6) NOT NULL,
+  updated_at DATETIME(6) NOT NULL,
+  input_json LONGTEXT NULL,
+  artifacts_json LONGTEXT NULL,
+  INDEX idx_jobs_updated_at(updated_at),
+  CONSTRAINT fk_jobs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS job_events (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  job_id VARCHAR(64) NOT NULL,
+  ts DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  status VARCHAR(32) NULL,
+  progress DOUBLE NULL,
+  message VARCHAR(255) NULL,
+  detail_json LONGTEXT NULL,
+  INDEX idx_events_job(job_id),
+  CONSTRAINT fk_events_job FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+);
